@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Hub | Cloud-Hosted Academic Resource & Peer Hub</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Background Glow Effects -->
+    <div class="glow-bg glow-1"></div>
+    <div class="glow-bg glow-2"></div>
+
+    <!-- Navigation Header -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <div class="logo-brand">
+                <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <span class="logo-text">Campus<span class="highlight">Hub</span></span>
+                <span class="badge cloud-badge"><i class="fa-solid fa-cloud"></i> GCP Powered</span>
+            </div>
+
+            <nav class="nav-links">
+                <button class="nav-link active" data-tab="resources"><i class="fa-solid fa-book-open"></i> Resources</button>
+                <button class="nav-link" data-tab="upload"><i class="fa-solid fa-cloud-arrow-up"></i> Upload</button>
+                <button class="nav-link" data-tab="groups"><i class="fa-solid fa-users"></i> Study Groups</button>
+            </nav>
+
+            <div class="auth-action-area" id="authActionArea">
+                <button class="btn btn-outline" id="loginOpenBtn"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+                <button class="btn btn-primary" id="registerOpenBtn"><i class="fa-solid fa-user-plus"></i> Sign Up</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main App Container -->
+    <main class="main-content container">
+
+        <!-- Banner / Hero Section -->
+        <section class="hero-section">
+            <div class="hero-badge"><i class="fa-solid fa-bolt"></i> Academic Resource Portal</div>
+            <h1 class="hero-title">Academic Resources & Peer Collaboration <span class="gradient-text">Unified</span></h1>
+            <p class="hero-subtitle">Upload, search, and download verified PYQs, lecture notes, lab manuals, and join peer study groups — powered by Spring Boot & Google Cloud Storage.</p>
+        </section>
+
+        <!-- TAB 1: ACADEMIC RESOURCES -->
+        <section id="tab-resources" class="tab-pane active">
+            <!-- Filter Bar -->
+            <div class="filter-card">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="Search by subject code (e.g., CS301), title, or keyword...">
+                </div>
+
+                <div class="filter-controls">
+                    <div class="select-wrapper">
+                        <i class="fa-solid fa-layer-group select-icon"></i>
+                        <select id="semesterFilter">
+                            <option value="">All Semesters</option>
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                            <option value="3">Semester 3</option>
+                            <option value="4">Semester 4</option>
+                            <option value="5">Semester 5</option>
+                            <option value="6">Semester 6</option>
+                            <option value="7">Semester 7</option>
+                            <option value="8">Semester 8</option>
+                        </select>
+                    </div>
+
+                    <div class="category-pills">
+                        <button class="category-btn active" data-category="">All Categories</button>
+                        <button class="category-btn" data-category="PYQ"><i class="fa-solid fa-file-invoice"></i> PYQs</button>
+                        <button class="category-btn" data-category="NOTES"><i class="fa-solid fa-note-sticky"></i> Notes</button>
+                        <button class="category-btn" data-category="LAB_MANUAL"><i class="fa-solid fa-flask"></i> Lab Manuals</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Grid -->
+            <div class="resources-grid" id="resourcesGrid">
+                <!-- Dynamic items rendered via JS -->
+            </div>
+        </section>
+
+        <!-- TAB 2: UPLOAD RESOURCE -->
+        <section id="tab-upload" class="tab-pane">
+            <div class="form-card upload-card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-cloud-arrow-up"></i> Upload Academic Resource</h2>
+                    <p>Share notes, previous year question papers, or lab manuals with fellow students. Files are stored securely on GCS.</p>
+                </div>
+
+                <form id="uploadForm" class="styled-form">
+                    <div class="form-group">
+                        <label for="resourceTitle">Resource Title <span class="required">*</span></label>
+                        <input type="text" id="resourceTitle" placeholder="e.g. Data Structures & Algorithms End-Sem PYQ 2023" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="subjectCode">Subject Code <span class="required">*</span></label>
+                            <input type="text" id="subjectCode" placeholder="e.g. CS302" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="uploadSemester">Semester <span class="required">*</span></label>
+                            <select id="uploadSemester" required>
+                                <option value="">Select Semester</option>
+                                <option value="1">Semester 1</option>
+                                <option value="2">Semester 2</option>
+                                <option value="3">Semester 3</option>
+                                <option value="4">Semester 4</option>
+                                <option value="5">Semester 5</option>
+                                <option value="6">Semester 6</option>
+                                <option value="7">Semester 7</option>
+                                <option value="8">Semester 8</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="uploadCategory">Category <span class="required">*</span></label>
+                            <select id="uploadCategory" required>
+                                <option value="">Select Category</option>
+                                <option value="PYQ">PYQ (Previous Year Questions)</option>
+                                <option value="NOTES">Lecture Notes</option>
+                                <option value="LAB_MANUAL">Lab Manual</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="resourceDescription">Description</label>
+                        <textarea id="resourceDescription" rows="3" placeholder="Add additional details, unit coverage, or professor references..."></textarea>
+                    </div>
+
+                    <!-- File Dropzone -->
+                    <div class="form-group">
+                        <label>Document File (PDF or Images) <span class="required">*</span></label>
+                        <div class="dropzone" id="fileDropzone">
+                            <i class="fa-solid fa-file-pdf dropzone-icon"></i>
+                            <p class="dropzone-text">Drag & drop your PDF/Image here or <span class="browse-link">browse file</span></p>
+                            <span class="file-hint">Supported formats: .pdf, .png, .jpg, .jpeg (Max: 15MB)</span>
+                            <input type="file" id="fileInput" accept="application/pdf,image/png,image/jpeg" required hidden>
+                            <div class="file-preview-info" id="filePreviewInfo"></div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-cloud-arrow-up"></i> Upload to Google Cloud Storage</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- TAB 3: STUDY GROUPS -->
+        <section id="tab-groups" class="tab-pane">
+            <div class="group-header-bar">
+                <div>
+                    <h2><i class="fa-solid fa-users"></i> Peer Study Groups</h2>
+                    <p>Connect with peers studying the same subjects to collaborate on assignments and exam prep.</p>
+                </div>
+                <button class="btn btn-primary" id="createGroupOpenBtn"><i class="fa-solid fa-plus"></i> Create Study Group</button>
+            </div>
+
+            <div class="groups-grid" id="groupsGrid">
+                <!-- Dynamic study groups rendered via JS -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal: Authentication (Login / Register) -->
+    <div class="modal" id="authModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-card">
+            <button class="modal-close" id="authModalClose">&times;</button>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab-btn active" id="authTabLogin">Login</button>
+                <button class="auth-tab-btn" id="authTabRegister">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form active">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="student@university.edu" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-right-to-bracket"></i> Login to Portal</button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="regFullName" placeholder="e.g. Alex Johnson" required>
+                </div>
+                <div class="form-group">
+                    <label>University Email</label>
+                    <input type="email" id="regEmail" placeholder="alex@university.edu" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Department</label>
+                        <input type="text" id="regDepartment" placeholder="e.g. CSE" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Semester</label>
+                        <input type="number" id="regSemester" min="1" max="8" value="6" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="regPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-user-plus"></i> Create Student Account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Create Study Group -->
+    <div class="modal" id="createGroupModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-card">
+            <button class="modal-close" id="groupModalClose">&times;</button>
+            <div class="card-header">
+                <h2>Create Peer Study Group</h2>
+                <p>Form a group for collaborative exam prep or project work.</p>
+            </div>
+            <form id="createGroupForm">
+                <div class="form-group">
+                    <label>Group Name</label>
+                    <input type="text" id="groupName" placeholder="e.g. Operating Systems EndSem Squad" required>
+                </div>
+                <div class="form-group">
+                    <label>Subject</label>
+                    <input type="text" id="groupSubject" placeholder="e.g. Operating Systems (CS304)" required>
+                </div>
+                <div class="form-group">
+                    <label>Max Members Limit</label>
+                    <input type="number" id="groupMaxMembers" min="2" max="50" value="10" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-users-viewfinder"></i> Launch Group</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

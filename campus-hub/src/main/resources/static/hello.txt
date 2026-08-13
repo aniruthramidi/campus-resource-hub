@@ -1,0 +1,8 @@
+Hello World! Welcome to Campus Hub - Cloud-Hosted Academic Resource & Peer Hub.
+
+This is a real academic resource text file hosted locally for testing GCS downloads and file handling.
+
+Course: CS301 - Data Structures & Algorithms
+Semester: 3
+Category: NOTES
+Uploader: Aniruth Reddy

@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: campus-hub
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/campushubdb}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+
+  servlet:
+    multipart:
+      max-file-size: 15MB
+      max-request-size: 15MB
+
+# JWT Configuration
+app:
+  jwt:
+    secret: ${JWT_SECRET:9a4f2c8d7e1b5a3f6c8e0d2b4a6f8c1d3e5b7a9f0c2d4e6b8a1c3d5e7f9a0b2c}
+    expiration-ms: 86400000 # 24 hours in milliseconds
+
+# Google Cloud Storage Configuration
+gcp:
+  storage:
+    bucket-name: ${GCP_STORAGE_BUCKET:campus-hub-resources}
+    project-id: ${GCP_PROJECT_ID:campus-resource-hub-dev}
+
+server:
+  port: 8080
