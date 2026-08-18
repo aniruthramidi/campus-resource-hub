@@ -2,6 +2,8 @@
 -- Database: campushubdb
 
 -- Drop tables if they already exist (for clean initialization)
+DROP TABLE IF EXISTS resource_bookmarks CASCADE;
+DROP TABLE IF EXISTS resource_upvotes CASCADE;
 DROP TABLE IF EXISTS study_groups CASCADE;
 DROP TABLE IF EXISTS resources CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
@@ -52,3 +54,21 @@ CREATE TABLE study_groups (
 -- Index for group lookup by creator and subject
 CREATE INDEX idx_study_groups_created_by ON study_groups(created_by);
 CREATE INDEX idx_study_groups_subject ON study_groups(subject);
+
+-- 4. RESOURCE UPVOTES TABLE
+CREATE TABLE resource_upvotes (
+    upvote_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    resource_id INT NOT NULL REFERENCES resources(resource_id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uk_user_resource_upvote UNIQUE (user_id, resource_id)
+);
+
+-- 5. RESOURCE BOOKMARKS TABLE
+CREATE TABLE resource_bookmarks (
+    bookmark_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    resource_id INT NOT NULL REFERENCES resources(resource_id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uk_user_resource_bookmark UNIQUE (user_id, resource_id)
+);
