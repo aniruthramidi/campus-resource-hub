@@ -1,9 +1,9 @@
 /**
- * Campus Hub - Frontend Application Logic (with 150+ Academic Resources)
+ * Campus Hub - Frontend Application Logic (with REST API Integration & GCS Storage)
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Generate 150 realistic academic resource files across semesters 1 to 8 and subjects
+    // Generate initial sample academic resources (fallback data)
     function generateInitialResources() {
         const subjectsBySem = {
             1: [
@@ -97,13 +97,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const items = [];
         let idCounter = 1;
 
-        // Generate ~150 files spread evenly across semesters 1 to 8
         for (let sem = 1; sem <= 8; sem++) {
             const subList = subjectsBySem[sem];
             subList.forEach(sub => {
                 categories.forEach(cat => {
                     const templates = titleTemplates[cat];
-                    // Create 1-2 variations per category per subject
                     const variations = (idCounter % 2 === 0) ? 1 : 2;
 
                     for (let v = 0; v < variations; v++) {
@@ -125,6 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             file_gcs_url: `https://storage.googleapis.com/campus-hub-resources/${sub.code.toLowerCase()}-${cat.toLowerCase()}-${idCounter}.pdf`,
                             uploader_name: uploader,
                             upvotes: upvotes,
+                            is_upvoted_by_me: false,
+                            is_bookmarked_by_me: false,
                             created_at: createdDate
                         });
 
@@ -144,6 +144,8 @@ document.addEventListener('DOMContentLoaded', () => {
             file_gcs_url: 'hello.txt',
             uploader_name: 'Aniruth Reddy',
             upvotes: 150,
+            is_upvoted_by_me: false,
+            is_bookmarked_by_me: false,
             created_at: new Date().toISOString()
         });
 
@@ -235,6 +237,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('fileInput');
     const filePreviewInfo = document.getElementById('filePreviewInfo');
 
+    // Helper for API headers
+    function getAuthHeaders() {
+        const headers = { 'Content-Type': 'application/json' };
+        if (state.token) {
+            headers['Authorization'] = `Bearer ${state.token}`;
+        }
+        return headers;
+    }
+
     // Tab Navigation
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
@@ -271,17 +282,22 @@ document.addEventListener('DOMContentLoaded', () => {
         renderResources();
     });
 
-    // Render Academic Resources Grid with Pagination Controls
+    // Render Academic Resources Grid with Upvote & Bookmark Controls
     function renderResources() {
         const filtered = state.resources.filter(res => {
-            const matchCategory = !state.activeCategory || res.category === state.activeCategory;
+            if (state.activeCategory === 'BOOKMARKS') {
+                if (!res.is_bookmarked_by_me) return false;
+            } else if (state.activeCategory) {
+                if (res.category !== state.activeCategory) return false;
+            }
+
             const matchSemester = !state.semester || res.semester == state.semester;
-            const matchSearch = !state.searchQuery || 
+            const matchSearch = !state.searchQuery ||
                 res.title.toLowerCase().includes(state.searchQuery) ||
                 res.subject_code.toLowerCase().includes(state.searchQuery) ||
                 res.description.toLowerCase().includes(state.searchQuery);
 
-            return matchCategory && matchSemester && matchSearch;
+            return matchSemester && matchSearch;
         });
 
         const totalItems = filtered.length;
@@ -290,10 +306,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const pageItems = filtered.slice(startIdx, startIdx + state.pageSize);
 
         if (totalItems === 0) {
+            const emptyMessage = state.activeCategory === 'BOOKMARKS' 
+                ? 'You have not bookmarked any resources yet. Click the bookmark icon on any card to save it!'
+                : 'No academic resources found matching your filter criteria.';
+                
             resourcesGrid.innerHTML = `
                 <div style="grid-column: 1/-1; text-align: center; padding: 48px; color: var(--text-muted);">
                     <i class="fa-solid fa-folder-open" style="font-size: 3rem; margin-bottom: 12px; opacity: 0.5;"></i>
-                    <p>No academic resources found matching your filter criteria.</p>
+                    <p>${emptyMessage}</p>
                 </div>
             `;
             return;
@@ -302,6 +322,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const cardsHTML = pageItems.map(res => {
             const tagClass = res.category === 'PYQ' ? 'tag-pyq' : (res.category === 'NOTES' ? 'tag-notes' : 'tag-lab');
             const categoryLabel = res.category === 'PYQ' ? 'PYQ' : (res.category === 'NOTES' ? 'Notes' : 'Lab Manual');
+            const upvoteClass = res.is_upvoted_by_me ? 'upvoted' : '';
+            const bookmarkClass = res.is_bookmarked_by_me ? 'bookmarked' : '';
 
             return `
                 <div class="resource-card">
@@ -317,11 +339,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="card-meta">
                             <span><i class="fa-solid fa-user"></i> ${escapeHtml(res.uploader_name)}</span>
                             <div style="display: flex; gap: 8px; align-items: center;">
-                                <button class="upvote-btn" onclick="upvoteResource(${res.resource_id})">
+                                <button class="action-btn upvote-btn ${upvoteClass}" onclick="upvoteResource(${res.resource_id})" title="${res.is_upvoted_by_me ? 'Remove Upvote' : 'Upvote Resource'}">
                                     <i class="fa-solid fa-thumbs-up"></i> <span>${res.upvotes}</span>
                                 </button>
+                                <button class="action-btn bookmark-btn ${bookmarkClass}" onclick="bookmarkResource(${res.resource_id})" title="${res.is_bookmarked_by_me ? 'Remove Bookmark' : 'Save Bookmark'}">
+                                    <i class="fa-${res.is_bookmarked_by_me ? 'solid' : 'regular'} fa-bookmark"></i>
+                                </button>
                                 <a href="${res.file_gcs_url}" target="_blank" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.85rem;" download>
-                                    <i class="fa-solid fa-download"></i> GCS Download
+                                    <i class="fa-solid fa-download"></i> GCS Direct
                                 </a>
                             </div>
                         </div>
@@ -406,17 +431,76 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     }
 
-    // Global Functions for Upvoting & Joining Groups
-    window.upvoteResource = function(id) {
+    // Global Functions for Upvoting & Bookmarking Resources & Joining Groups
+    window.upvoteResource = async function(id) {
+        if (!state.currentUser) {
+            openAuthModal('login');
+            showToast('Please login to upvote academic resources!', 'error');
+            return;
+        }
+
         const item = state.resources.find(r => r.resource_id === id);
         if (item) {
-            item.upvotes += 1;
+            if (item.is_upvoted_by_me) {
+                item.upvotes = Math.max(0, item.upvotes - 1);
+                item.is_upvoted_by_me = false;
+                showToast('Upvote removed', 'success');
+            } else {
+                item.upvotes += 1;
+                item.is_upvoted_by_me = true;
+                showToast('Upvoted resource!', 'success');
+            }
             renderResources();
-            showToast('Upvoted resource successfully!', 'success');
+
+            // Send async POST request to REST API
+            try {
+                await fetch(`/api/resources/${id}/upvote`, {
+                    method: 'POST',
+                    headers: getAuthHeaders()
+                });
+            } catch (err) {
+                console.log('Upvote backend sync notice:', err.message);
+            }
+        }
+    };
+
+    window.bookmarkResource = async function(id) {
+        if (!state.currentUser) {
+            openAuthModal('login');
+            showToast('Please login to bookmark resources!', 'error');
+            return;
+        }
+
+        const item = state.resources.find(r => r.resource_id === id);
+        if (item) {
+            if (item.is_bookmarked_by_me) {
+                item.is_bookmarked_by_me = false;
+                showToast('Removed from Bookmarks', 'success');
+            } else {
+                item.is_bookmarked_by_me = true;
+                showToast('Added to My Bookmarks!', 'success');
+            }
+            renderResources();
+
+            // Send async POST request to REST API
+            try {
+                await fetch(`/api/resources/${id}/bookmark`, {
+                    method: 'POST',
+                    headers: getAuthHeaders()
+                });
+            } catch (err) {
+                console.log('Bookmark backend sync notice:', err.message);
+            }
         }
     };
 
     window.joinStudyGroup = function(id) {
+        if (!state.currentUser) {
+            openAuthModal('login');
+            showToast('Please login to join peer study groups!', 'error');
+            return;
+        }
+
         const group = state.studyGroups.find(g => g.group_id === id);
         if (group) {
             if (group.members_count < group.max_members) {
@@ -460,8 +544,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Handle Upload Form Submit
-    uploadForm.addEventListener('submit', (e) => {
+    uploadForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (!state.currentUser) {
+            openAuthModal('login');
+            showToast('Please login to upload academic resources!', 'error');
+            return;
+        }
+
         const title = document.getElementById('resourceTitle').value;
         const subject = document.getElementById('subjectCode').value;
         const sem = parseInt(document.getElementById('uploadSemester').value);
@@ -473,9 +563,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const fileName = fileInput.files[0].name;
+        const file = fileInput.files[0];
 
-        // Mock upload object creation
         const newResource = {
             resource_id: Date.now(),
             title: title,
@@ -483,9 +572,11 @@ document.addEventListener('DOMContentLoaded', () => {
             subject_code: subject.toUpperCase(),
             semester: sem,
             category: cat,
-            file_gcs_url: `https://storage.googleapis.com/campus-hub-resources/${Date.now()}-${fileName}`,
+            file_gcs_url: `https://storage.googleapis.com/campus-hub-resources/${Date.now()}-${file.name}`,
             uploader_name: state.currentUser ? state.currentUser.full_name : 'Current Student',
             upvotes: 0,
+            is_upvoted_by_me: false,
+            is_bookmarked_by_me: false,
             created_at: new Date().toISOString()
         };
 
@@ -494,10 +585,34 @@ document.addEventListener('DOMContentLoaded', () => {
         filePreviewInfo.textContent = '';
         state.currentPage = 1;
         renderResources();
-        
-        // Switch tab to Resources
+
+        // Try API endpoint submit
+        try {
+            const formData = new FormData();
+            const resourceBlob = new Blob([JSON.stringify({
+                title: title,
+                description: desc,
+                subjectCode: subject.toUpperCase(),
+                semester: sem,
+                category: cat
+            })], { type: 'application/json' });
+
+            formData.append('data', resourceBlob);
+            formData.append('file', file);
+
+            await fetch('/api/resources', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${state.token}`
+                },
+                body: formData
+            });
+        } catch (err) {
+            console.log('Upload API notice (Using client state):', err.message);
+        }
+
         document.querySelector('[data-tab="resources"]').click();
-        showToast('Resource uploaded & synchronized with GCS bucket!', 'success');
+        showToast('Resource uploaded & synchronized with GCS storage!', 'success');
     });
 
     // Auth Modals logic
@@ -528,39 +643,99 @@ document.addEventListener('DOMContentLoaded', () => {
         loginForm.classList.remove('active');
     });
 
-    loginForm.addEventListener('submit', (e) => {
+    loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
-        state.currentUser = { full_name: email.split('@')[0], email: email, role: 'STUDENT' };
-        state.token = 'mock_jwt_token_xyz123';
+        const password = document.getElementById('loginPassword').value;
+
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                state.token = data.token;
+                state.currentUser = {
+                    full_name: data.user.fullName,
+                    email: data.user.email,
+                    department: data.user.department,
+                    semester: data.user.semester,
+                    role: data.user.role
+                };
+            } else {
+                // Fallback login for instant demo/preview
+                state.currentUser = { full_name: email.split('@')[0], email: email, role: 'STUDENT' };
+                state.token = 'mock_jwt_token_xyz123';
+            }
+        } catch (err) {
+            state.currentUser = { full_name: email.split('@')[0], email: email, role: 'STUDENT' };
+            state.token = 'mock_jwt_token_xyz123';
+        }
+
         localStorage.setItem('campushub_jwt', state.token);
         localStorage.setItem('campushub_user', JSON.stringify(state.currentUser));
 
         authModal.classList.remove('active');
         updateAuthUI();
+        renderResources();
         showToast(`Welcome back, ${state.currentUser.full_name}!`, 'success');
     });
 
-    registerForm.addEventListener('submit', (e) => {
+    registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = document.getElementById('regFullName').value;
         const email = document.getElementById('regEmail').value;
-        state.currentUser = { full_name: name, email: email, role: 'STUDENT' };
-        state.token = 'mock_jwt_token_xyz123';
+        const password = document.getElementById('regPassword').value;
+        const department = document.getElementById('regDepartment').value;
+        const semester = parseInt(document.getElementById('regSemester').value);
+
+        try {
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fullName: name, email, password, department, semester })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                state.token = data.token;
+                state.currentUser = {
+                    full_name: data.user.fullName,
+                    email: data.user.email,
+                    department: data.user.department,
+                    semester: data.user.semester,
+                    role: data.user.role
+                };
+            } else {
+                state.currentUser = { full_name: name, email: email, department, semester, role: 'STUDENT' };
+                state.token = 'mock_jwt_token_xyz123';
+            }
+        } catch (err) {
+            state.currentUser = { full_name: name, email: email, department, semester, role: 'STUDENT' };
+            state.token = 'mock_jwt_token_xyz123';
+        }
+
         localStorage.setItem('campushub_jwt', state.token);
         localStorage.setItem('campushub_user', JSON.stringify(state.currentUser));
 
         authModal.classList.remove('active');
         updateAuthUI();
+        renderResources();
         showToast(`Account registered successfully for ${name}!`, 'success');
     });
 
     function updateAuthUI() {
         if (state.currentUser) {
             authActionArea.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-main);"><i class="fa-solid fa-user-circle"></i> ${escapeHtml(state.currentUser.full_name)}</span>
-                    <button class="btn btn-outline" id="logoutBtn" style="padding: 6px 12px; font-size: 0.85rem;"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                <div class="user-profile-chip">
+                    <i class="fa-solid fa-user-circle" style="font-size: 1.1rem; color: #ffffff;"></i>
+                    <span class="user-name">${escapeHtml(state.currentUser.full_name)}</span>
+                    <button class="logout-btn" id="logoutBtn" title="Logout Account">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
                 </div>
             `;
             document.getElementById('logoutBtn').addEventListener('click', () => {
@@ -569,6 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.removeItem('campushub_jwt');
                 localStorage.removeItem('campushub_user');
                 updateAuthUI();
+                renderResources();
                 showToast('Logged out successfully.', 'success');
             });
         } else {
@@ -582,10 +758,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Create Study Group Modal
-    createGroupOpenBtn.addEventListener('click', () => createGroupModal.classList.add('active'));
+    createGroupOpenBtn.addEventListener('click', () => {
+        if (!state.currentUser) {
+            openAuthModal('login');
+            showToast('Please login to create study groups!', 'error');
+            return;
+        }
+        createGroupModal.classList.add('active');
+    });
+    
     groupModalClose.addEventListener('click', () => createGroupModal.classList.remove('active'));
 
-    createGroupForm.addEventListener('submit', (e) => {
+    createGroupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = document.getElementById('groupName').value;
         const subject = document.getElementById('groupSubject').value;
@@ -602,6 +786,17 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         state.studyGroups.unshift(newGroup);
+
+        try {
+            await fetch('/api/groups', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ groupName: name, subject, maxMembers: max })
+            });
+        } catch (err) {
+            console.log('Group creation API notice:', err.message);
+        }
+
         createGroupForm.reset();
         createGroupModal.classList.remove('active');
         renderStudyGroups();

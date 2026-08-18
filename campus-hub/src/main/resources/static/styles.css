@@ -738,3 +738,48 @@ input:focus, select:focus, textarea:focus {
     from { transform: translateX(100%); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
 }
+
+/* Upvote & Bookmark Dynamic UI States */
+.action-btn.upvote-btn.upvoted {
+    background: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+    font-weight: 700;
+}
+
+.action-btn.bookmark-btn.bookmarked {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #ffffff;
+    color: #ffffff;
+}
+
+.user-profile-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+}
+
+.user-profile-chip .user-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.user-profile-chip .logout-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: var(--transition);
+    padding: 4px;
+}
+
+.user-profile-chip .logout-btn:hover {
+    color: #ffffff;
+}
+
