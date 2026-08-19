@@ -1,0 +1,10 @@
+{
+  "name": "campus-resource-hub",
+  "version": "1.0.0",
+  "description": "Cloud-Hosted Campus Resource & Peer Hub Frontend",
+  "private": true,
+  "scripts": {
+    "build": "mkdir -p public && cp -r campus-hub/src/main/resources/static/* public/",
+    "start": "npx serve public"
+  }
+}
