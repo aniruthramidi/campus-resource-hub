@@ -45,6 +45,20 @@ public class StudyGroupService {
         return mapToResponse(savedGroup);
     }
 
+    @Transactional
+    public StudyGroupResponse joinGroup(Long groupId, User currentUser) {
+        StudyGroup group = studyGroupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("Study group not found with ID: " + groupId));
+        return mapToResponse(group);
+    }
+
+    @Transactional
+    public StudyGroupResponse leaveGroup(Long groupId, User currentUser) {
+        StudyGroup group = studyGroupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("Study group not found with ID: " + groupId));
+        return mapToResponse(group);
+    }
+
     private StudyGroupResponse mapToResponse(StudyGroup group) {
         return StudyGroupResponse.builder()
                 .groupId(group.getGroupId())
