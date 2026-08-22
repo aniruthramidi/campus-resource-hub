@@ -269,11 +269,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Search and Semester Filter Event Listeners
+    // Search Debounce Helper
+    let searchDebounceTimer;
     searchInput.addEventListener('input', (e) => {
-        state.searchQuery = e.target.value.toLowerCase().trim();
-        state.currentPage = 1;
-        renderResources();
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => {
+            state.searchQuery = e.target.value.toLowerCase().trim();
+            state.currentPage = 1;
+            renderResources();
+        }, 250);
     });
 
     semesterFilter.addEventListener('change', (e) => {
@@ -284,10 +288,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Render Academic Resources Grid with Upvote & Bookmark Controls
     function renderResources() {
-        const filtered = state.resources.filter(res => {
+        let itemsToFilter = [...state.resources];
+        if (state.activeCategory === 'TRENDING') {
+            itemsToFilter.sort((a, b) => (b.upvotes || 0) - (a.upvotes || 0));
+        }
+
+        const filtered = itemsToFilter.filter(res => {
             if (state.activeCategory === 'BOOKMARKS') {
                 if (!res.is_bookmarked_by_me) return false;
-            } else if (state.activeCategory) {
+            } else if (state.activeCategory && state.activeCategory !== 'TRENDING') {
                 if (res.category !== state.activeCategory) return false;
             }
 
@@ -301,6 +310,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const totalItems = filtered.length;
+        const resultsCountEl = document.getElementById('resultsCount');
+        if (resultsCountEl) {
+            resultsCountEl.innerHTML = `<i class="fa-solid fa-list-check" style="margin-right: 6px;"></i> Showing <strong>${totalItems}</strong> verified academic ${totalItems === 1 ? 'resource' : 'resources'}`;
+        }
         const totalPages = Math.ceil(totalItems / state.pageSize) || 1;
         const startIdx = (state.currentPage - 1) * state.pageSize;
         const pageItems = filtered.slice(startIdx, startIdx + state.pageSize);
@@ -819,6 +832,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function escapeHtml(str) {
         return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    // Theme Toggle Handler
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = document.body.getAttribute('data-theme') || 'dark';
+            const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', nextTheme);
+            themeToggleBtn.innerHTML = nextTheme === 'dark' ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+            showToast(`Switched to ${nextTheme} theme`, 'info');
+        });
     }
 
     // Initializations
