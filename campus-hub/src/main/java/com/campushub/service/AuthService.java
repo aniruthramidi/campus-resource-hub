@@ -25,6 +25,8 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        com.campushub.util.PasswordValidator.validatePassword(request.getPassword());
+
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email address is already registered: " + request.getEmail());
         }
