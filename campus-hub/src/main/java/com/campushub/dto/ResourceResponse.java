@@ -22,6 +22,7 @@ public class ResourceResponse {
     private Long uploaderId;
     private String uploaderName;
     private Integer upvotes;
+    private Integer views;
     private Boolean isUpvotedByMe;
     private Boolean isBookmarkedByMe;
     private LocalDateTime createdAt;

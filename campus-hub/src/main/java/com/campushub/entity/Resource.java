@@ -44,6 +44,9 @@ public class Resource {
     @Column(name = "upvotes")
     private Integer upvotes;
 
+    @Column(name = "views")
+    private Integer views;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
@@ -54,6 +57,9 @@ public class Resource {
         }
         if (this.upvotes == null) {
             this.upvotes = 0;
+        }
+        if (this.views == null) {
+            this.views = 0;
         }
     }
 }

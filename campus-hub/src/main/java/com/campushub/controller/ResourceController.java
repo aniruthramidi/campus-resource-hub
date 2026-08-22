@@ -92,6 +92,19 @@ public class ResourceController {
         return ResponseEntity.ok(resourceService.toggleBookmark(resourceId, currentUser));
     }
 
+    @PostMapping("/{id}/view")
+    @Operation(summary = "Increment resource view count", description = "Increments the view count for a specific academic resource")
+    public ResponseEntity<ResourceResponse> incrementViewCount(
+            @PathVariable("id") Long resourceId,
+            Authentication authentication) {
+
+        User currentUser = null;
+        if (authentication != null && authentication.isAuthenticated()) {
+            currentUser = authService.getUserByEmail(authentication.getName());
+        }
+        return ResponseEntity.ok(resourceService.incrementViewCount(resourceId, currentUser));
+    }
+
     @GetMapping("/bookmarks")
     public ResponseEntity<List<ResourceResponse>> getBookmarks(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {

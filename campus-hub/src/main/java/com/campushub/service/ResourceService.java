@@ -112,6 +112,15 @@ public class ResourceService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public ResourceResponse incrementViewCount(Long resourceId, User currentUser) {
+        Resource resource = resourceRepository.findById(resourceId)
+                .orElseThrow(() -> new IllegalArgumentException("Resource not found with ID: " + resourceId));
+        resource.setViews((resource.getViews() != null ? resource.getViews() : 0) + 1);
+        Resource saved = resourceRepository.save(resource);
+        return mapToResponse(saved, currentUser);
+    }
+
     private ResourceResponse mapToResponse(Resource resource, User currentUser) {
         boolean isUpvotedByMe = false;
         boolean isBookmarkedByMe = false;
@@ -132,6 +141,7 @@ public class ResourceService {
                 .uploaderId(resource.getUploader().getUserId())
                 .uploaderName(resource.getUploader().getFullName())
                 .upvotes(resource.getUpvotes() != null ? resource.getUpvotes() : 0)
+                .views(resource.getViews() != null ? resource.getViews() : 0)
                 .isUpvotedByMe(isUpvotedByMe)
                 .isBookmarkedByMe(isBookmarkedByMe)
                 .createdAt(resource.getCreatedAt())
