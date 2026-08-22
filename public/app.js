@@ -358,6 +358,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <button class="action-btn bookmark-btn ${bookmarkClass}" onclick="bookmarkResource(${res.resource_id})" title="${res.is_bookmarked_by_me ? 'Remove Bookmark' : 'Save Bookmark'}">
                                     <i class="fa-${res.is_bookmarked_by_me ? 'solid' : 'regular'} fa-bookmark"></i>
                                 </button>
+                                <button class="action-btn share-btn" onclick="shareResource('${res.file_gcs_url}')" title="Copy Document Link">
+                                    <i class="fa-solid fa-share-nodes"></i>
+                                </button>
                                 <a href="${res.file_gcs_url}" target="_blank" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.85rem;" download>
                                     <i class="fa-solid fa-download"></i> GCS Direct
                                 </a>
@@ -504,6 +507,18 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.log('Bookmark backend sync notice:', err.message);
             }
+        }
+    };
+
+    window.shareResource = function(url) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('Resource GCS URL copied to clipboard!', 'info');
+            }).catch(() => {
+                showToast('Copied link: ' + url, 'info');
+            });
+        } else {
+            showToast('Direct URL: ' + url, 'info');
         }
     };
 
