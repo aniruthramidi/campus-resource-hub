@@ -16,7 +16,7 @@ public class JwtTokenProvider {
     private final long jwtExpirationMs;
 
     public JwtTokenProvider(
-            @Value("${app.jwt.secret:9a4f2c8d7e1b5a3f6c8e0d2b4a6f8c1d3e5b7a9f0c2d4e6b8a1c3d5e7f9a0b2c}") String jwtSecret,
+            @Value("${app.jwt.secret:CampusResourceHubJwtSecretKeyForTestEnvironmentsOnly32BytesMinLengthRequirement}") String jwtSecret,
             @Value("${app.jwt.expiration-ms:86400000}") long jwtExpirationMs) {
         byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
         this.key = Keys.hmacShaKeyFor(keyBytes);

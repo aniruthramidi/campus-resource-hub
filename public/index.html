@@ -32,6 +32,7 @@
                 <button class="nav-link active" data-tab="resources"><i class="fa-solid fa-book-open"></i> Resources</button>
                 <button class="nav-link" data-tab="upload"><i class="fa-solid fa-cloud-arrow-up"></i> Upload</button>
                 <button class="nav-link" data-tab="groups"><i class="fa-solid fa-users"></i> Study Groups</button>
+                <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
             </nav>
 
             <div class="auth-action-area" id="authActionArea">
@@ -78,12 +79,19 @@
 
                     <div class="category-pills">
                         <button class="category-btn active" data-category="">All Categories</button>
+                        <button class="category-btn" data-category="TRENDING"><i class="fa-solid fa-fire"></i> Trending</button>
                         <button class="category-btn" data-category="PYQ"><i class="fa-solid fa-file-invoice"></i> PYQs</button>
                         <button class="category-btn" data-category="NOTES"><i class="fa-solid fa-note-sticky"></i> Notes</button>
                         <button class="category-btn" data-category="LAB_MANUAL"><i class="fa-solid fa-flask"></i> Lab Manuals</button>
                         <button class="category-btn bookmark-category-btn" data-category="BOOKMARKS"><i class="fa-solid fa-bookmark"></i> My Bookmarks</button>
                     </div>
                 </div>
+            </div>
+
+            <div class="results-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 0 4px;">
+                <span class="results-count" id="resultsCount" style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">
+                    <i class="fa-solid fa-list-check" style="margin-right: 6px;"></i> Showing academic resources
+                </span>
             </div>
 
             <!-- Resource Grid -->

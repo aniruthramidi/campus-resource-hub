@@ -35,6 +35,11 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.deny())
+                        .xssProtection(xss -> xss.disable())
+                        .contentTypeOptions(contentType -> {})
+                )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
@@ -43,7 +48,10 @@ public class SecurityConfig {
                                 "/styles.css",
                                 "/app.js",
                                 "/favicon.ico",
-                                "/api/auth/**"
+                                "/api/auth/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/resources/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/groups/**").permitAll()

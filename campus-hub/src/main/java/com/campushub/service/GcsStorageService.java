@@ -21,6 +21,8 @@ public class GcsStorageService {
     private String projectId;
 
     public String uploadFile(MultipartFile file) throws IOException {
+        com.campushub.util.FileValidator.validateFile(file);
+
         String originalFilename = file.getOriginalFilename();
         String extension = "";
         if (originalFilename != null && originalFilename.contains(".")) {

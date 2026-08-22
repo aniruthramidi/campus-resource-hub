@@ -27,3 +27,15 @@ node_modules/
 
 # Pages temporary files
 *.pages
+
+# Secrets & Environment Credentials
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+*credentials*.json
+*service-account*.json
+gcp-*.json
+

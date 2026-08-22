@@ -20,5 +20,9 @@ public interface ResourceRepository extends JpaRepository<Resource, Long> {
                                    @Param("semester") Integer semester,
                                    @Param("category") String category);
 
+    List<Resource> findTop10ByOrderByUpvotesDesc();
+
+    List<Resource> findBySubjectCodeIgnoreCase(String subjectCode);
+
     List<Resource> findByUploader_UserIdOrderByCreatedAtDesc(Long uploaderId);
 }
