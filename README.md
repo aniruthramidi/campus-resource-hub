@@ -4,8 +4,9 @@
 [![Java](https://img.shields.io/badge/Java-17%2B-orange.svg)](https://www.oracle.com/java/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Google%20Cloud%20SQL-blue.svg)](https://www.postgresql.org/)
 [![Google Cloud Storage](https://img.shields.io/badge/GCP-Cloud%20Storage%20SDK-red.svg)](https://cloud.google.com/storage)
+[![Swagger UI](https://img.shields.io/badge/OpenAPI-Swagger%20v3.0-green.svg)](http://localhost:8080/swagger-ui.html)
 [![JWT Security](https://img.shields.io/badge/Security-Spring%20Security%20%2B%20JWT-purple.svg)](https://jwt.io/)
-[![License](https://img.shields.io/badge/License-MIT-lightgrey.svg)](LICENSE)
+[![CI Build](https://img.shields.io/badge/CI-GitHub%20Actions-blue.svg)](.github/workflows/ci.yml)
 
 A centralized, secure, and scalable web portal for university students to upload, search, download, and organize academic resources (Previous Year Questions - PYQs, lecture notes, lab manuals) and discover peer study groups.
 
@@ -14,10 +15,13 @@ A centralized, secure, and scalable web portal for university students to upload
 ## 📌 Features
 
 - 🔍 **Instant Search & Filter**: Search 150+ academic resources by subject code (e.g. `CS301`), title, keyword, semester (1 to 8), or resource category (`PYQ`, `NOTES`, `LAB_MANUAL`).
-- ☁️ **Cloud Object Storage (GCP GCS)**: Secure document handling with UUID file name sanitization and direct GCS URL storage (restricting uploads strictly to valid PDFs and images).
+- ⚡ **Trending & Bookmarks**: View top upvoted trending resources and bookmark study materials to your personal saved library.
+- 👤 **User Profile Management**: Retrieve and update profile details (department, semester, full name) via protected REST endpoints.
+- 👥 **Peer Study Groups**: Discover, form, join, and leave subject-specific peer study groups with dynamic capacity bounds.
+- 📖 **Interactive OpenAPI / Swagger UI**: Built-in Swagger documentation available at `/swagger-ui.html` for easy API testing and schema exploration.
+- ☁️ **Cloud Object Storage (GCP GCS)**: Secure document handling with UUID file name sanitization and direct GCS URL storage.
 - 🛡️ **JWT Security & Auth**: Role-based authentication (`STUDENT`, `FACULTY`, `ADMIN`) using Spring Security and stateless JSON Web Tokens.
-- 👥 **Peer Study Groups**: Discover, create, and join subject-specific peer study groups with dynamic member capacity limits.
-- 📱 **Responsive Monochrome SPA**: Modern, high-contrast monochrome Single Page Application interface with glassmorphism cards and toast notifications.
+- 🌗 **Dark/Light Theme Toggle & Toasts**: Dynamic monochrome UI theme switcher and animated toast notifications.
 
 ---
 
@@ -25,16 +29,40 @@ A centralized, secure, and scalable web portal for university students to upload
 
 ### Core Technologies
 - **Backend Framework**: Java 17+, Spring Boot 3.2.5 (Spring Data JPA, Spring Security, Spring Validation)
-- **Database**: PostgreSQL (Google Cloud SQL in Production)
+- **API Documentation**: SpringDoc OpenAPI 2.5.0 / Swagger UI
+- **Database**: PostgreSQL (Google Cloud SQL in Production) / H2 In-Memory (Test Profile)
 - **Cloud Storage**: Google Cloud Storage Java SDK (`com.google.cloud:google-cloud-storage:2.38.0`)
 - **Authentication**: JJWT (`io.jsonwebtoken:jjwt-api:0.12.5`)
-- **Frontend**: HTML5, Modern Vanilla CSS (Obsidian/Monochrome theme), Vanilla JavaScript (Single Page Architecture)
+- **Frontend**: HTML5, Modern Vanilla CSS (Obsidian/Monochrome theme with theme switch), Vanilla JavaScript
+- **CI/CD**: GitHub Actions pipeline for automated Maven compilation, testing, and frontend verification
 
 ---
 
-## 🗄️ Relational Database Schema
+## 🌐 Key API Endpoints Matrix
 
-The database schema is defined in [`schema.sql`](campus-hub/src/main/resources/schema.sql):
+| HTTP Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| `POST` | `/api/auth/register` | Register a new student account | No |
+| `POST` | `/api/auth/login` | Authenticate and obtain JWT token | No |
+| `GET` | `/api/auth/me` | Fetch current user basic info | Yes |
+| `GET` | `/api/auth/profile` | Retrieve detailed user profile | Yes |
+| `PUT` | `/api/auth/profile` | Update profile (department, semester, name) | Yes |
+| `GET` | `/api/resources` | Search resources (query, semester, category) | No |
+| `GET` | `/api/resources/trending` | Get top 10 upvoted trending resources | No |
+| `POST` | `/api/resources` | Upload new resource to GCP Cloud Storage | Yes |
+| `POST` | `/api/resources/{id}/upvote` | Toggle upvote on resource | Yes |
+| `POST` | `/api/resources/{id}/bookmark` | Toggle bookmark on resource | Yes |
+| `GET` | `/api/resources/bookmarks` | Fetch user's bookmarked resources | Yes |
+| `GET` | `/api/groups` | List peer study groups | No |
+| `POST` | `/api/groups` | Create new peer study group | Yes |
+| `POST` | `/api/groups/{id}/join` | Join peer study group | Yes |
+| `POST` | `/api/groups/{id}/leave` | Leave peer study group | Yes |
+
+---
+
+## 🗄️ Database Schema
+
+The relational schema is configured in [`schema.sql`](campus-hub/src/main/resources/schema.sql):
 
 ```sql
 -- 1. USERS TABLE
@@ -76,90 +104,34 @@ CREATE TABLE study_groups (
 
 ---
 
-## 📁 Repository Structure
+## 🚀 Local Development & Testing
 
-```text
-campus-resource-hub/
-├── .gitignore
-├── README.md
-└── campus-hub/
-    ├── pom.xml                                  # Maven Dependencies Configuration
-    └── src/
-        └── main/
-            ├── java/
-            │   └── com/
-            │       └── campushub/
-            │           ├── CampusHubApplication.java # Spring Boot Application Main
-            │           ├── config/              # Security & GCP Storage Beans
-            │           ├── controller/          # REST API Controllers
-            │           ├── dto/                 # Request & Response DTOs
-            │           ├── entity/              # JPA Entities (User, Resource, StudyGroup)
-            │           ├── exception/           # Global Exception Handler (@ControllerAdvice)
-            │           ├── repository/          # Spring Data JPA Repositories
-            │           ├── security/            # JWT Token Provider & Filter
-            │           └── service/             # Business Logic & GCS Upload Service
-            └── resources/
-                ├── application.yml              # Spring Boot Application Properties
-                ├── schema.sql                   # PostgreSQL Migration DDL
-                └── static/                      # Single Page Application Frontend
-                    ├── app.js                   # Client-side SPA Logic & Dataset
-                    ├── hello.txt                # Sample Test File
-                    ├── index.html               # Main HTML Layout
-                    └── styles.css               # Monochrome Glassmorphism CSS
-```
+### Running Spring Boot Backend
 
----
-
-## 🚀 Local Development Setup
-
-### Prerequisites
-- **Java 17** or higher
-- **Maven 3.8+**
-- **PostgreSQL 14+** (running on `localhost:5432` with database `campushubdb`)
-
-### 1. Database Setup
-Create the PostgreSQL database and run the schema migration script:
-```bash
-createdb -U postgres campushubdb
-psql -U postgres -d campushubdb -f campus-hub/src/main/resources/schema.sql
-```
-
-### 2. Configure Environment Variables
-Set database credentials and GCP storage settings in `campus-hub/src/main/resources/application.yml` or export environment variables:
-```bash
-export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/campushubdb
-export SPRING_DATASOURCE_USERNAME=postgres
-export SPRING_DATASOURCE_PASSWORD=postgres
-export GCP_STORAGE_BUCKET=campus-hub-resources
-export JWT_SECRET=your_secure_256bit_secret_key_here
-```
-
-### 3. Build & Run the Spring Boot Backend
-Navigate to `campus-hub/` and start the Spring Boot server:
 ```bash
 cd campus-hub
-mvn clean spring-boot:run
+mvn spring-boot:run
 ```
 
-The application will start at:
-👉 **`http://localhost:8080`**
+### Running Unit & Integration Tests (H2 Database Profile)
+
+```bash
+cd campus-hub
+mvn clean test -Dspring.profiles.active=test
+```
+
+### Accessing Swagger API Documentation
+
+Once the application is running on port `8080`, navigate to:
+- **Swagger UI**: `http://localhost:8080/swagger-ui.html`
+- **OpenAPI JSON Spec**: `http://localhost:8080/v3/api-docs`
 
 ---
 
-## 📡 REST API Summary
+## 📜 Changelog Overview
 
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/register` | Register a new student account | ❌ No |
-| `POST` | `/api/auth/login` | Login & acquire JWT access token | ❌ No |
-| `GET` | `/api/resources` | Search & filter resources by semester/category | ❌ No |
-| `POST` | `/api/resources/upload` | Upload resource & push file to GCS bucket | 🔒 Yes (JWT) |
-| `PUT` | `/api/resources/{id}/upvote` | Increment upvotes for a resource | 🔒 Yes (JWT) |
-| `GET` | `/api/groups` | Discover active peer study groups | ❌ No |
-| `POST` | `/api/groups` | Create a new peer study group | 🔒 Yes (JWT) |
-| `POST` | `/api/groups/{id}/join` | Join an existing study group | 🔒 Yes (JWT) |
-
----
-
-## 📄 License
-Distributed under the **MIT License**. See `LICENSE` for details.
+- **`feat(api-docs)`**: Added SpringDoc OpenAPI Swagger UI documentation endpoints.
+- **`feat(backend)`**: User profile management (`UserProfileDto`), study group membership operations, and trending resources queries.
+- **`test(backend)`**: Added Spring Boot unit & integration tests for JWT security and authentication.
+- **`feat(frontend)`**: Integrated Dark/Light mode theme switch, Toast alerts, and search/trending pills.
+- **`ci`**: Automated GitHub Actions workflow for build, test, and frontend assets.
