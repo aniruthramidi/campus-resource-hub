@@ -507,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    window.joinStudyGroup = function(id) {
+    window.joinStudyGroup = async function(id) {
         if (!state.currentUser) {
             openAuthModal('login');
             showToast('Please login to join peer study groups!', 'error');
@@ -516,12 +516,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const group = state.studyGroups.find(g => g.group_id === id);
         if (group) {
-            if (group.members_count < group.max_members) {
+            if (group.is_joined) {
+                group.is_joined = false;
+                group.members_count = Math.max(1, group.members_count - 1);
+                renderStudyGroups();
+                showToast(`Left ${group.group_name}`, 'info');
+                try {
+                    await fetch(`/api/groups/${id}/leave`, { method: 'POST', headers: getAuthHeaders() });
+                } catch (e) {}
+            } else if (group.members_count < group.max_members) {
+                group.is_joined = true;
                 group.members_count += 1;
                 renderStudyGroups();
-                showToast(`Joined ${group.group_name}!`, 'success');
+                showToast(`Successfully joined ${group.group_name}!`, 'success');
+                try {
+                    await fetch(`/api/groups/${id}/join`, { method: 'POST', headers: getAuthHeaders() });
+                } catch (e) {}
             } else {
-                showToast('Study group is full!', 'error');
+                showToast('Study group is currently full!', 'error');
             }
         }
     };
