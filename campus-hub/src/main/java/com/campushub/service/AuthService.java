@@ -67,6 +67,35 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
     }
 
+    public com.campushub.dto.UserProfileDto getUserProfile(String email) {
+        User user = getUserByEmail(email);
+        return com.campushub.dto.UserProfileDto.builder()
+                .userId(user.getUserId())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .department(user.getDepartment())
+                .semester(user.getSemester())
+                .role(user.getRole())
+                .createdAt(user.getCreatedAt())
+                .build();
+    }
+
+    @Transactional
+    public com.campushub.dto.UserProfileDto updateUserProfile(String email, com.campushub.dto.UpdateProfileRequest request) {
+        User user = getUserByEmail(email);
+        if (request.getFullName() != null && !request.getFullName().isBlank()) {
+            user.setFullName(request.getFullName());
+        }
+        if (request.getDepartment() != null) {
+            user.setDepartment(request.getDepartment());
+        }
+        if (request.getSemester() != null) {
+            user.setSemester(request.getSemester());
+        }
+        User updated = userRepository.save(user);
+        return getUserProfile(updated.getEmail());
+    }
+
     public UserDto mapToUserDto(User user) {
         return UserDto.builder()
                 .userId(user.getUserId())
