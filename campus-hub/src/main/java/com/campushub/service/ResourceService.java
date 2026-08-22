@@ -36,6 +36,14 @@ public class ResourceService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<ResourceResponse> getTrendingResources(User currentUser) {
+        List<Resource> trending = resourceRepository.findTop10ByOrderByUpvotesDesc();
+        return trending.stream()
+                .map(r -> mapToResponse(r, currentUser))
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public ResourceResponse createResource(ResourceRequest request, MultipartFile file, User currentUser) throws IOException {
         String fileGcsUrl = storageService.uploadFile(file);

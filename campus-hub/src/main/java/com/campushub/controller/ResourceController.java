@@ -5,6 +5,8 @@ import com.campushub.dto.ResourceResponse;
 import com.campushub.entity.User;
 import com.campushub.service.AuthService;
 import com.campushub.service.ResourceService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -19,12 +21,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/resources")
 @RequiredArgsConstructor
+@Tag(name = "Academic Resources", description = "Endpoints for searching, uploading, upvoting, and bookmarking study materials")
 public class ResourceController {
 
     private final ResourceService resourceService;
     private final AuthService authService;
 
     @GetMapping
+    @Operation(summary = "Search academic resources", description = "Filter resources by title, subject code, semester, or category")
     public ResponseEntity<List<ResourceResponse>> searchResources(
             @RequestParam(required = false) String query,
             @RequestParam(required = false) Integer semester,
@@ -37,6 +41,15 @@ public class ResourceController {
         }
 
         return ResponseEntity.ok(resourceService.searchResources(query, semester, category, currentUser));
+    }
+
+    @GetMapping("/trending")
+    public ResponseEntity<List<ResourceResponse>> getTrendingResources(Authentication authentication) {
+        User currentUser = null;
+        if (authentication != null && authentication.isAuthenticated()) {
+            currentUser = authService.getUserByEmail(authentication.getName());
+        }
+        return ResponseEntity.ok(resourceService.getTrendingResources(currentUser));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
