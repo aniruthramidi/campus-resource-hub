@@ -358,6 +358,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <button class="action-btn bookmark-btn ${bookmarkClass}" onclick="bookmarkResource(${res.resource_id})" title="${res.is_bookmarked_by_me ? 'Remove Bookmark' : 'Save Bookmark'}">
                                     <i class="fa-${res.is_bookmarked_by_me ? 'solid' : 'regular'} fa-bookmark"></i>
                                 </button>
+                                <button class="action-btn share-btn" onclick="shareResource('${res.file_gcs_url}')" title="Copy Document Link">
+                                    <i class="fa-solid fa-share-nodes"></i>
+                                </button>
                                 <a href="${res.file_gcs_url}" target="_blank" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.85rem;" download>
                                     <i class="fa-solid fa-download"></i> GCS Direct
                                 </a>
@@ -507,7 +510,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    window.joinStudyGroup = function(id) {
+    window.shareResource = function(url) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('Resource GCS URL copied to clipboard!', 'info');
+            }).catch(() => {
+                showToast('Copied link: ' + url, 'info');
+            });
+        } else {
+            showToast('Direct URL: ' + url, 'info');
+        }
+    };
+
+    window.joinStudyGroup = async function(id) {
         if (!state.currentUser) {
             openAuthModal('login');
             showToast('Please login to join peer study groups!', 'error');
@@ -516,12 +531,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const group = state.studyGroups.find(g => g.group_id === id);
         if (group) {
-            if (group.members_count < group.max_members) {
+            if (group.is_joined) {
+                group.is_joined = false;
+                group.members_count = Math.max(1, group.members_count - 1);
+                renderStudyGroups();
+                showToast(`Left ${group.group_name}`, 'info');
+                try {
+                    await fetch(`/api/groups/${id}/leave`, { method: 'POST', headers: getAuthHeaders() });
+                } catch (e) {}
+            } else if (group.members_count < group.max_members) {
+                group.is_joined = true;
                 group.members_count += 1;
                 renderStudyGroups();
-                showToast(`Joined ${group.group_name}!`, 'success');
+                showToast(`Successfully joined ${group.group_name}!`, 'success');
+                try {
+                    await fetch(`/api/groups/${id}/join`, { method: 'POST', headers: getAuthHeaders() });
+                } catch (e) {}
             } else {
-                showToast('Study group is full!', 'error');
+                showToast('Study group is currently full!', 'error');
             }
         }
     };
@@ -843,6 +870,22 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.setAttribute('data-theme', nextTheme);
             themeToggleBtn.innerHTML = nextTheme === 'dark' ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
             showToast(`Switched to ${nextTheme} theme`, 'info');
+        });
+    }
+
+    // Scroll To Top Button Handler
+    const scrollTopBtn = document.getElementById('scrollTopBtn');
+    if (scrollTopBtn) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                scrollTopBtn.classList.add('visible');
+            } else {
+                scrollTopBtn.classList.remove('visible');
+            }
+        });
+
+        scrollTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
 

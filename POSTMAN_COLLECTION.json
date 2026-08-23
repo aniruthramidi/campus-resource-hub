@@ -1,0 +1,58 @@
+{
+  "info": {
+    "name": "Campus Resource & Peer Hub API Collection",
+    "description": "API collection for testing Authentication, Academic Resource Search, GCP Uploads, and Peer Study Groups.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth - Register Student",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Alex Rivera\",\n  \"email\": \"alex@campus.edu\",\n  \"password\": \"Password123\",\n  \"department\": \"Computer Science\",\n  \"semester\": 6\n}"
+        },
+        "url": { "raw": "http://localhost:8080/api/auth/register" }
+      }
+    },
+    {
+      "name": "Auth - Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"alex@campus.edu\",\n  \"password\": \"Password123\"\n}"
+        },
+        "url": { "raw": "http://localhost:8080/api/auth/login" }
+      }
+    },
+    {
+      "name": "Resources - Search & Filter",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "http://localhost:8080/api/resources?query=CS301&semester=3&category=NOTES" }
+      }
+    },
+    {
+      "name": "Resources - Trending Top 10",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "http://localhost:8080/api/resources/trending" }
+      }
+    },
+    {
+      "name": "Study Groups - List Active Groups",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "http://localhost:8080/api/groups" }
+      }
+    }
+  ]
+}
