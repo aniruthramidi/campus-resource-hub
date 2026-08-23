@@ -240,8 +240,8 @@ body[data-theme="light"] .logo-icon {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: rgba(255, 255, 255, 0.06);
-    color: #e5e5e5;
+    background: var(--bg-card);
+    color: var(--text-main);
     border: 1px solid var(--border-color);
     padding: 6px 16px;
     border-radius: 20px;
@@ -256,11 +256,17 @@ body[data-theme="light"] .logo-icon {
     font-weight: 700;
     letter-spacing: -1px;
     margin-bottom: 12px;
-    color: #ffffff;
+    color: var(--text-main);
 }
 
 .gradient-text {
     background: linear-gradient(135deg, #ffffff, #a1a1aa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+body[data-theme="light"] .gradient-text {
+    background: linear-gradient(135deg, #09090b, #52525b);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -288,13 +294,12 @@ body[data-theme="light"] .logo-icon {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Filter Card */
+/* Filter Card (Solid Monochrome) */
 .filter-card {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     padding: 20px;
-    backdrop-filter: blur(12px);
     margin-bottom: 32px;
     display: flex;
     flex-direction: column;
@@ -328,8 +333,7 @@ body[data-theme="light"] .logo-icon {
 }
 
 .search-box input:focus {
-    border-color: #ffffff;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+    border-color: var(--border-highlight);
 }
 
 .filter-controls {
@@ -372,7 +376,7 @@ body[data-theme="light"] .logo-icon {
 }
 
 .category-btn {
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--bg-input);
     border: 1px solid var(--border-color);
     color: var(--text-muted);
     padding: 8px 16px;
@@ -387,9 +391,9 @@ body[data-theme="light"] .logo-icon {
 }
 
 .category-btn.active, .category-btn:hover {
-    border-color: #ffffff;
-    color: #09090b;
-    background: #ffffff;
+    border-color: var(--primary);
+    color: var(--primary-text);
+    background: var(--primary);
 }
 
 /* Resources Grid & Resource Card */
