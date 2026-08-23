@@ -63,13 +63,9 @@ body {
     line-height: 1.6;
 }
 
-/* Monochrome Glow background orbs */
+/* Disable glassmorphism background glow orbs */
 .glow-bg {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(140px);
-    z-index: -1;
-    pointer-events: none;
+    display: none !important;
 }
 .glow-1 {
     width: 500px;
