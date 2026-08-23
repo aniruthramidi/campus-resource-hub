@@ -396,7 +396,7 @@ body[data-theme="light"] .gradient-text {
     background: var(--primary);
 }
 
-/* Resources Grid & Resource Card */
+/* Resources Grid & Resource Card (Solid Monochrome) */
 .resources-grid, .groups-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -408,7 +408,6 @@ body[data-theme="light"] .gradient-text {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     padding: 24px;
-    backdrop-filter: blur(12px);
     transition: var(--transition);
     display: flex;
     flex-direction: column;
